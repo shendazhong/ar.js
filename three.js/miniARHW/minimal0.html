@@ -22,7 +22,6 @@ var renderer, scene, camera;
 var stats;
 var arToolKitSource, arToolKitContext;
 var markerHiro;
-var theta=0;
 
 init();
 animate();
@@ -107,7 +106,6 @@ function addMarkerHiro(){
 	})
 
 	// add a torus knot & a transparent box	
-	/*
 	var geometry	= new THREE.TorusKnotGeometry(0.3,0.1,64,16);
 	var material	= new THREE.MeshNormalMaterial();
 	var mesh	= new THREE.Mesh( geometry, material );
@@ -118,18 +116,6 @@ function addMarkerHiro(){
 				new THREE.MeshNormalMaterial({transparent:true, opacity:0.3}));
 	mesh.position.y	= 0.5
 	markerRoot.add (mesh);
-	*/
-
-	var ball = new THREE.Mesh(new THREE.SphereGeometry(0.1,20,20), new THREE.MeshNormalMaterial());
-	markerRoot.add(ball);
-	ball.position.z=0.1;
-
-	var cylinder  = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 1, 32), new THREE.MeshNormalMaterial());
-	markerRoot.add(cylinder );
-	cylinder.position.y=1;
-
-	var grid=new THREE.GridHelper(1, 10, 'red', 'white');
-	markerRoot.add(grid);
 		
 	return markerRoot;
 }	
@@ -141,10 +127,7 @@ function animate() {
 	if( arToolkitSource.ready === false )	return
 	arToolkitContext.update( arToolkitSource.domElement )
 
-	theta-=0.01;
-	markerHiro.children[0].position.set(0.5*Math.cos(theta), 0.5*Math.sin(theta), 0.1);
-	markerHiro.children[1].position.set(0, Math.sin(theta), 0);
-	//markerHiro.children[0].rotation.x += 0.1;
+	markerHiro.children[0].rotation.x += 0.1;
 	
 	renderer.render (scene, camera);	
 }
