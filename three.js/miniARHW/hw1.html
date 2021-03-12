@@ -120,11 +120,10 @@ function addMarkerHiro(){
 	markerRoot.add (mesh);
 	*/
 
-	var ball = new THREE.Mesh(new THREE.SphereGeometry(0.1,20,20), new THREE.MeshNormalMaterial());
+	var ball = new THREE.Mesh(new THREE.SphereGeometry(0.2,20,20), new THREE.MeshNormalMaterial());
 	markerRoot.add(ball);
-	ball.position.z=0.1;
 
-	var cylinder  = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 1, 32), new THREE.MeshNormalMaterial());
+	var cylinder  = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.5, 32), new THREE.MeshBasicMaterial());
 	markerRoot.add(cylinder );
 	cylinder.position.y=1;
 
@@ -141,9 +140,16 @@ function animate() {
 	if( arToolkitSource.ready === false )	return
 	arToolkitContext.update( arToolkitSource.domElement )
 
+	if(Math.round(Math.cos(theta) * 100) / 100 == 1) {
+		markerHiro.children[1].material.color.setHex(0xAE0000);
+	}
+	else {
+		markerHiro.children[1].material.color.setHex(0x000079);
+	}
+
 	theta-=0.01;
 	markerHiro.children[0].position.set(0.5*Math.cos(theta), 0.5*Math.sin(theta), 0.1);
-	markerHiro.children[1].position.set(0, Math.sin(theta), 0);
+	markerHiro.children[1].position.set(0, Math.cos(theta), 0);
 	//markerHiro.children[0].rotation.x += 0.1;
 	
 	renderer.render (scene, camera);	
