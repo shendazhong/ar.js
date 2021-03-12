@@ -141,12 +141,12 @@ function animate() {
 	arToolkitContext.update( arToolkitSource.domElement )
 
 	if(Math.round(Math.cos(theta) * 100) / 100 == 1) {
-		markerHiro.children[1].material.color.setHex(0xAE0000);
+		markerHiro.children[1].material.color.set(0xEA0000);
 	}
 	else {
-		markerHiro.children[1].material.color.setHex(0x000079);
+		markerHiro.children[1].material.color.set(0x000079);
 	}
-
+	
 	theta-=0.01;
 	markerHiro.children[0].position.set(0.5*Math.cos(theta), 0.5*Math.sin(theta), 0.1);
 	markerHiro.children[1].position.set(0, Math.cos(theta), 0);
