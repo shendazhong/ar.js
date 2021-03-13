@@ -139,16 +139,17 @@ function animate() {
 	
 	if( arToolkitSource.ready === false )	return
 	arToolkitContext.update( arToolkitSource.domElement )
-
+	/*
 	if(Math.round(Math.cos(theta) * 100) / 100 == 1) {
 		markerHiro.children[1].material.color.set(0xEA0000);
 	}
 	else {
 		markerHiro.children[1].material.color.set(0x000079);
 	}
-	
+	*/
 	theta-=0.01;
 	markerHiro.children[0].position.set(0.5*Math.cos(theta), 0.5*Math.sin(theta), 0.1);
+	markerHiro.children[1].material.color.setHSL(0.5, Math.abs(Math.cos(theta)), 0.5);
 	markerHiro.children[1].position.set(0, Math.cos(theta), 0);
 	//markerHiro.children[0].rotation.x += 0.1;
 	
