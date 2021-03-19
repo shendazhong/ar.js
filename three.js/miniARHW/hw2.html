@@ -28,6 +28,7 @@
     - three.js<br />
     Minimal Version<br />
     <button id="toggle" style="width: 20%">Toggle Turn</button>
+    <p style="color: yellow">顏色是<span id="COLOR"></span></p>
   </div>
 
   <script>
@@ -41,6 +42,7 @@
       angle = 0;
     var omega = 0; // angular velocity
     var isActive = false;
+    var pinColor = "";
 
     init();
     animate();
@@ -152,7 +154,7 @@
       markerRoot.add(cone);
       */
 
-      let geometry = new THREE.PlaneGeometry(0.01, 0.3, 1, 1);
+      let geometry = new THREE.PlaneGeometry(0.05, 0.5, 1, 1);
       let material = new THREE.MeshBasicMaterial({
         color: 0x000000,
         side: THREE.DoubleSide,
@@ -161,11 +163,11 @@
       markerRoot.add(plane);
       plane.rotation.x = 11;
       plane.position.x = -0.005;
-      plane.position.y = 0.1159;
+      plane.position.y = 0.125;
       plane.position.z = 0.149;
 
       let geometry0 = new THREE.CircleGeometry(
-        0.5,
+        1.5,
         32,
         Math.PI / 2,
         (2 * Math.PI) / 3
@@ -178,7 +180,7 @@
       group.add(circle0);
 
       let geometry1 = new THREE.CircleGeometry(
-        0.5,
+        1.5,
         32,
         Math.PI / 2 + (2 / 3) * Math.PI,
         (2 * Math.PI) / 3
@@ -191,19 +193,21 @@
       group.add(circle1);
 
       let geometry2 = new THREE.CircleGeometry(
-        0.5,
+        1.5,
         32,
         Math.PI / 2 - (2 / 3) * Math.PI,
         (2 * Math.PI) / 3
       );
       let material2 = new THREE.MeshBasicMaterial({
-        color: 0x00ffff,
+        color: 0x000079,
         side: THREE.DoubleSide,
       });
       let circle2 = new THREE.Mesh(geometry2, material2);
       group.add(circle2);
       group.rotation.x = 11;
       group.position.y = 0.1;
+      group.position.z = -0.1;
+      //group.rotation.z = 0.52359876;
 
       return markerRoot;
     }
@@ -232,7 +236,20 @@
 
       angle += omega * dt;
       group.rotation.z = angle;
+      let count = ((angle / 0.017453292) % 360) + 60;
+      if (count >= 0 && count < 120) {
+        pinColor = "紅色";
+      }
 
+      if (count >= 120 && count < 240) {
+        pinColor = "黃色";
+      }
+
+      if (count >= 240 && count < 360) {
+        pinColor = "藍色";
+      }
+
+      document.getElementById("COLOR").textContent = pinColor;
       renderer.render(scene, camera);
     }
   </script>
