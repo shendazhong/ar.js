@@ -38,7 +38,6 @@
     var arToolKitSource, arToolKitContext;
     var markerHiro;
     var group,
-      mesh,
       angle = 0;
     var omega = 0; // angular velocity
     var isActive = false;
@@ -140,6 +139,20 @@
       group = new THREE.Group();
       markerRoot.add(group);
 
+      let dir = new THREE.Vector3(0, 1, 0);
+      dir.normalize();
+      let origin = new THREE.Vector3(0, 0, 0);
+      let arrowHelper = new THREE.ArrowHelper(
+        dir,
+        origin,
+        0.8,
+        0x000000,
+        0.2,
+        0.2
+      );
+
+      markerRoot.add(arrowHelper);
+
       /*let geometry = new THREE.ConeGeometry(0.025, 0.4, 4, 1, 0, 6.3);
       let material = new THREE.MeshBasicMaterial({
         color: 0x000000,
@@ -153,7 +166,7 @@
       cone.position.y = 0.15;
       markerRoot.add(cone);
       */
-
+      /*
       let geometry = new THREE.PlaneGeometry(0.03, 0.5, 1, 1);
       let material = new THREE.MeshBasicMaterial({
         color: 0x000000,
@@ -165,6 +178,7 @@
       plane.position.x = -0.005;
       plane.position.y = 0.14;
       plane.position.z = 0.149;
+      */
 
       let geometry0 = new THREE.CircleGeometry(
         1.6,
@@ -204,10 +218,8 @@
       });
       let circle2 = new THREE.Mesh(geometry2, material2);
       group.add(circle2);
-      group.rotation.x = 11;
-      group.position.y = 0.1;
-      group.position.z = -0.1;
-      //group.rotation.z = 0.52359876;
+
+      group.rotateX(-Math.PI / 2);
 
       return markerRoot;
     }
@@ -237,11 +249,11 @@
       angle += omega * dt;
       group.rotation.z = angle;
 
-      let count = (angle / 0.017453292 + 60) % 360;
+      let theta = (angle % (2 * Math.PI)) * (180 / Math.PI);
 
-      if (count >= 0 && count < 120) {
+      if (theta >= 0 && theta < 120) {
         pinColor = "紅色";
-      } else if (count >= 120 && count < 240) {
+      } else if (theta >= 120 && theta < 240) {
         pinColor = "黃色";
       } else {
         pinColor = "藍色";
