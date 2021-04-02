@@ -188,7 +188,7 @@
         (2 * Math.PI) / 3
       );
       let material0 = new THREE.MeshBasicMaterial({
-        color: 0xffff00,
+        color: "red",
         side: THREE.DoubleSide,
       });
       let circle0 = new THREE.Mesh(geometry0, material0);
@@ -201,7 +201,7 @@
         (2 * Math.PI) / 3
       );
       let material1 = new THREE.MeshBasicMaterial({
-        color: 0xff0000,
+        color: "blue",
         side: THREE.DoubleSide,
       });
       let circle1 = new THREE.Mesh(geometry1, material1);
@@ -214,7 +214,7 @@
         (2 * Math.PI) / 3
       );
       let material2 = new THREE.MeshBasicMaterial({
-        color: 0x000079,
+        color: "green",
         side: THREE.DoubleSide,
       });
       let circle2 = new THREE.Mesh(geometry2, material2);
@@ -255,11 +255,11 @@
       let theta = (angle % (2 * Math.PI)) * (180 / Math.PI);
 
       if ((theta >= 0 && theta < 60) || (theta >= 300 && theta < 360)) {
-        pinColor = "紅色";
-      } else if (theta >= 60 && theta < 180) {
-        pinColor = "黃色";
-      } else {
         pinColor = "藍色";
+      } else if (theta >= 60 && theta < 180) {
+        pinColor = "紅色";
+      } else {
+        pinColor = "綠色";
       }
 
       document.getElementById("COLOR").textContent = pinColor;
