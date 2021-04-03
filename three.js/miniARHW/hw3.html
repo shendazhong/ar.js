@@ -38,10 +38,24 @@
 
   <script>
     class Button {
-      constructor(size, x, y) {
+      constructor(size, x, y, colorString = "yellow", map = null) {
         this.size = size;
         this.centerX = x;
         this.centerY = y;
+        let material = new THREE.MeshBasicMaterial({
+          color: colorString,
+          transparent: true,
+          opacity: 0.8,
+        });
+        this.mesh = new THREE.Mesh(
+          new THREE.CircleGeometry(size, 36),
+          material
+        );
+        if (map) material.map = map;
+        this.mesh.position.set(x, y, 0);
+      }
+      setLocation(x, y) {
+        this.mesh.position.set(x, y, 0);
       }
       d1To(v) {
         // 1-norm
@@ -131,8 +145,6 @@
       ////////////////////////////////////////////////////
       // create a button to toggle rotation
       //
-      var buttonSize = halfH / 3;
-      button1 = new Button(buttonSize, 0, -halfH / 2);
 
       var loader = new THREE.TextureLoader();
       loader.setCrossOrigin("");
@@ -144,17 +156,15 @@
         // Function when resource is loaded
 
         function (texture) {
-          // do something with the texture
-          // Plane with default texture coordinates [0,1]x[0,1]
-          var material = new THREE.MeshBasicMaterial({
-            map: texture,
-          });
-          var mesh = new THREE.Mesh(
-            new THREE.CircleGeometry(buttonSize, 32),
-            material
+          var buttonSize = halfH / 3;
+          button1 = new Button(
+            buttonSize,
+            halfW / 2,
+            -halfH / 2,
+            "white",
+            texture
           );
-          mesh.position.set(button1.centerX, button1.centerY, 0);
-          sceneHUD.add(mesh);
+          sceneHUD.add(button1.mesh);
         }
       );
 
@@ -311,7 +321,7 @@
 
       renderer.clear();
       renderer.render(scene, camera);
-      //button.material.visible = markerRoot.visible;
+      button1.mesh.material.visible = markerRoot.visible;
       renderer.render(sceneHUD, cameraHUD);
 
       var dt = 0.2;
