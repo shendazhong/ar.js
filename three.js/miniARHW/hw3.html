@@ -24,9 +24,12 @@
       z-index: 1;
     "
   >
-    <p id="touch"></p>
-    <p id="ratio"></p>
-    <div id="downup" style="color: red; display: inline"></div>
+    <div style="color: yellow">
+      <p id="touch"></p>
+      <p id="ratio"></p>
+      <p id="is_IOS"></p>
+    </div>
+    <div id="down-up" style="color: red; display: inline"></div>
     <div id="picked" style="color: red; display: inline"></div>
     <p style="background-color: black; color: yellow; width: 10%">
       顏色是<span id="COLOR"></span>
@@ -82,7 +85,8 @@
     function init() {
       let _iOSDevice = !!navigator.platform.match(/iPhone|iPod|iPad/);
 
-      console.log("iOS: " + _iOSDevice);
+      if (_iOSDevice) $("#is_IOS").text("IOS Device");
+      else $("#is_IOS").text("Not IOS Device");
 
       renderer = new THREE.WebGLRenderer({
         // antialias	: true,
@@ -107,25 +111,6 @@
       // Create a camera
       camera = new THREE.Camera();
       scene.add(camera);
-      /*
-      var loader = new THREE.TextureLoader();
-      loader.setCrossOrigin("");
-
-      // load a resource
-      loader.load(
-        // resource URL
-        "https://i.imgur.com/XDGO2kQ.png",
-        // Function when resource is loaded
-        function (texture) {
-          // do something with the texture
-          // Plane with default texture coordinates [0,1]x[0,1]
-          var texMat = new THREE.MeshBasicMaterial({
-            map: texture,
-          });
-          var floor = new THREE.Mesh(new THREE.CircleGeometry(40, 20), texMat);
-          scene.add(floor);
-        }
-      );*/
 
       // for HUD scene
       sceneHUD = new THREE.Scene();
@@ -147,17 +132,31 @@
       // create a button to toggle rotation
       //
       var buttonSize = halfH / 3;
-      button = new THREE.Mesh(
-        new THREE.PlaneGeometry(buttonSize, buttonSize),
-        new THREE.MeshBasicMaterial({
-          color: "yellow",
-          transparent: true,
-          opacity: 0.5,
-        })
-      );
       button1 = new Button(buttonSize, 0, -halfH / 2);
-      button.position.set(button1.centerX, button1.centerY, 0);
-      sceneHUD.add(button);
+
+      var loader = new THREE.TextureLoader();
+      loader.setCrossOrigin("");
+
+      // load a resource
+      loader.load(
+        // resource URL
+        "source/redb.png",
+        // Function when resource is loaded
+
+        function (texture) {
+          // do something with the texture
+          // Plane with default texture coordinates [0,1]x[0,1]
+          var material = new THREE.MeshBasicMaterial({
+            map: texture,
+          });
+          var mesh = new THREE.Mesh(
+            new THREE.CircleGeometry(buttonSize, 32),
+            material
+          );
+          mesh.position.set(button1.centerX, button1.centerY, 0);
+          sceneHUD.add(mesh);
+        }
+      );
 
       ////////////////////////////////////////////////////////////////////////////////
       //          handle arToolkitSource
@@ -312,7 +311,7 @@
 
       renderer.clear();
       renderer.render(scene, camera);
-      button.material.visible = markerRoot.visible;
+      //button.material.visible = markerRoot.visible;
       renderer.render(sceneHUD, cameraHUD);
 
       var dt = 0.2;
@@ -337,8 +336,8 @@
         pinColor = "綠色";
       }
 
-      if (down) $("#downup").text("down");
-      else $("#downup").text("up");
+      if (down) $("#down-up").text("down");
+      else $("#down-up").text("up");
 
       document.getElementById("COLOR").textContent = pinColor;
     }
@@ -362,10 +361,10 @@
     }
     function pickCompute(ndcX, ndcY) {
       // use 2D algorithm
-      let dist = button1.dInfTo([halfW * ndcX, halfH * ndcY]);
+      let dist = button1.d2To([halfW * ndcX, halfH * ndcY]);
       $("#touch").text("Mouse-dist-Button: " + dist.toFixed(2));
 
-      if (dist < button1.size / 2) {
+      if (dist < button1.size) {
         $("#picked").text(" -> picked");
         isActive = !isActive;
       } else {
