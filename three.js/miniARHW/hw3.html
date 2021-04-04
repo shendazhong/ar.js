@@ -114,19 +114,13 @@
       renderer.domElement.style.left = "0px";
       document.body.appendChild(renderer.domElement);
 
-      // width/height ratio
       whRatio = window.innerWidth / window.innerHeight;
 
-      // for multi-pass rendering
       renderer.autoClear = false;
 
-      // init scene and camera
       scene = new THREE.Scene();
-      // Create a camera
       camera = new THREE.Camera();
       scene.add(camera);
-
-      // for HUD scene
       sceneHUD = new THREE.Scene();
 
       // eye-coordinate bounds
@@ -142,28 +136,15 @@
         10
       );
 
-      ////////////////////////////////////////////////////
-      // create a button to toggle rotation
-      //
-
       var loader = new THREE.TextureLoader();
       loader.setCrossOrigin("");
 
-      // load a resource
       loader.load(
-        // resource URL
         "source/redb.png",
-        // Function when resource is loaded
 
         function (texture) {
-          var buttonSize = halfH / 3;
-          button1 = new Button(
-            buttonSize,
-            halfW / 2,
-            -halfH / 2,
-            "white",
-            texture
-          );
+          var buttonSize = halfH / 5;
+          button1 = new Button(buttonSize, 0, -halfH / 2, "white", texture);
           sceneHUD.add(button1.mesh);
         }
       );
