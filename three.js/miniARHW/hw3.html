@@ -8,11 +8,11 @@
 <script src="../examples/vendor/three.js/build/three.min.js"></script>
 <script src="../examples/vendor/three.js/examples/js/libs/stats.min.js"></script>
 <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
-<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!-- ar.js -->
 <script src="../build/ar.js"></script>
 <script>
-  THREEx.ArToolkitContext.baseURL = "../";
+  THREEx.ArToolkitContext.baseURL = '../';
 </script>
 <body style="margin: 0px; overflow: hidden; font-family: Monospace">
   <div
@@ -38,7 +38,7 @@
 
   <script>
     class Button {
-      constructor(size, x, y, colorString = "yellow", map = null) {
+      constructor(size, x, y, colorString = 'yellow', map = null) {
         this.size = size;
         this.centerX = x;
         this.centerY = y;
@@ -86,12 +86,13 @@
     var _iOSDevice;
     var markerRoot,
       markerHiro,
+      arrowHelper,
       group,
       angle = 0,
       omega = 0;
     var down = false,
       isActive = false;
-    var pinColor = "";
+    var pinColor = '';
 
     init();
     animate();
@@ -99,19 +100,19 @@
     function init() {
       let _iOSDevice = !!navigator.platform.match(/iPhone|iPod|iPad/);
 
-      if (_iOSDevice) $("#is_IOS").text("IOS Device");
-      else $("#is_IOS").text("Not IOS Device");
+      if (_iOSDevice) $('#is_IOS').text('IOS Device');
+      else $('#is_IOS').text('Not IOS Device');
 
       renderer = new THREE.WebGLRenderer({
         // antialias	: true,
         alpha: true,
       });
-      renderer.setClearColor(new THREE.Color("lightgrey"), 0);
+      renderer.setClearColor(new THREE.Color('lightgrey'), 0);
       //renderer.setPixelRatio( 1/2 );
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.domElement.style.position = "absolute";
-      renderer.domElement.style.top = "0px";
-      renderer.domElement.style.left = "0px";
+      renderer.domElement.style.position = 'absolute';
+      renderer.domElement.style.top = '0px';
+      renderer.domElement.style.left = '0px';
       document.body.appendChild(renderer.domElement);
 
       whRatio = window.innerWidth / window.innerHeight;
@@ -137,14 +138,14 @@
       );
 
       var loader = new THREE.TextureLoader();
-      loader.setCrossOrigin("");
+      loader.setCrossOrigin('');
 
       loader.load(
-        "source/redb.png",
+        'source/redb.png',
 
         function (texture) {
           var buttonSize = halfH / 5;
-          button1 = new Button(buttonSize, 0, -halfH / 2, "white", texture);
+          button1 = new Button(buttonSize, 0, -halfH / 2, 'white', texture);
           sceneHUD.add(button1.mesh);
         }
       );
@@ -155,7 +156,7 @@
 
       arToolkitSource = new THREEx.ArToolkitSource({
         // to read from the webcam
-        sourceType: "webcam",
+        sourceType: 'webcam',
 
         // to read from an image
         // sourceType : 'image',
@@ -177,8 +178,8 @@
       // create atToolkitContext
       arToolkitContext = new THREEx.ArToolkitContext({
         cameraParametersUrl:
-          THREEx.ArToolkitContext.baseURL + "../data/data/camera_para.dat",
-        detectionMode: "mono",
+          THREEx.ArToolkitContext.baseURL + '../data/data/camera_para.dat',
+        detectionMode: 'mono',
         maxDetectionRate: 30,
         canvasWidth: 80 * 3,
         canvasHeight: 60 * 3,
@@ -193,16 +194,16 @@
       document.body.appendChild(stats.dom);
 
       // handle resize: can be iPAD change orientation
-      window.addEventListener("resize", function () {
+      window.addEventListener('resize', function () {
         onResize();
       });
 
       if (_iOSDevice) {
-        window.addEventListener("touchstart", onTouchStart, false);
-        window.addEventListener("touchend", onTouchEnd, false);
+        window.addEventListener('touchstart', onTouchStart, false);
+        window.addEventListener('touchend', onTouchEnd, false);
       } else {
-        window.addEventListener("mouseup", onMouseUp, false);
-        window.addEventListener("mousedown", onMouseDown, false);
+        window.addEventListener('mouseup', onMouseUp, false);
+        window.addEventListener('mousedown', onMouseDown, false);
       }
 
       markerHiro = addMarkerHiro();
@@ -216,13 +217,13 @@
         arToolkitContext,
         markerRoot,
         {
-          type: "pattern",
+          type: 'pattern',
           patternUrl:
-            THREEx.ArToolkitContext.baseURL + "../data/data/patt.hiro",
+            THREEx.ArToolkitContext.baseURL + '../data/data/patt.hiro',
         }
       );
 
-      var gridXZ = new THREE.GridHelper(1, 10, "red", "white");
+      var gridXZ = new THREE.GridHelper(1, 10, 'red', 'white');
       markerRoot.add(gridXZ);
 
       group = new THREE.Group();
@@ -231,12 +232,12 @@
       let dir = new THREE.Vector3(0, 0, 1);
       dir.normalize();
       let origin = new THREE.Vector3(0, 0, 0);
-      let arrowHelper = new THREE.ArrowHelper(
+      arrowHelper = new THREE.ArrowHelper(
         dir,
         origin,
         0.4,
         0x000000,
-        0.05,
+        0.25,
         0.05
       );
       markerRoot.add(arrowHelper);
@@ -248,7 +249,7 @@
         (2 * Math.PI) / 3
       );
       let material0 = new THREE.MeshBasicMaterial({
-        color: "red",
+        color: 'red',
         side: THREE.DoubleSide,
       });
       let circle0 = new THREE.Mesh(geometry0, material0);
@@ -261,7 +262,7 @@
         (2 * Math.PI) / 3
       );
       let material1 = new THREE.MeshBasicMaterial({
-        color: "blue",
+        color: 'blue',
         side: THREE.DoubleSide,
       });
       let circle1 = new THREE.Mesh(geometry1, material1);
@@ -274,7 +275,7 @@
         (2 * Math.PI) / 3
       );
       let material2 = new THREE.MeshBasicMaterial({
-        color: "green",
+        color: 'green',
         side: THREE.DoubleSide,
       });
       let circle2 = new THREE.Mesh(geometry2, material2);
@@ -282,7 +283,7 @@
 
       group.rotateX(-Math.PI / 2);
       group.position.y = 0.1;
-      arrowHelper.position.y = 0.11;
+      arrowHelper.position.y = 0.15;
 
       return markerRoot;
     }
@@ -315,22 +316,22 @@
       omega = clamp(omega, 0, maxOmega);
 
       angle += omega * dt;
-      group.rotation.z = angle;
+      arrowHelper.rotation.z = angle;
 
       let theta = (angle % (2 * Math.PI)) * (180 / Math.PI);
 
       if ((theta >= 0 && theta < 60) || (theta >= 300 && theta < 360)) {
-        pinColor = "藍色";
+        pinColor = '藍色';
       } else if (theta >= 60 && theta < 180) {
-        pinColor = "紅色";
+        pinColor = '紅色';
       } else {
-        pinColor = "綠色";
+        pinColor = '綠色';
       }
 
-      if (down) $("#down-up").text("down");
-      else $("#down-up").text("up");
+      if (down) $('#down-up').text('down');
+      else $('#down-up').text('up');
 
-      document.getElementById("COLOR").textContent = pinColor;
+      document.getElementById('COLOR').textContent = pinColor;
     }
     function onResize() {
       arToolkitSource.onResize();
@@ -339,8 +340,8 @@
         arToolkitSource.copySizeTo(arToolkitContext.arController.canvas);
       }
 
-      $("#ratio").text(
-        "resize: width: " + window.innerWidth + " height: " + window.innerHeight
+      $('#ratio').text(
+        'resize: width: ' + window.innerWidth + ' height: ' + window.innerHeight
       );
 
       whRatio = window.innerWidth / window.innerHeight;
@@ -353,13 +354,13 @@
     function pickCompute(ndcX, ndcY) {
       // use 2D algorithm
       let dist = button1.d2To([halfW * ndcX, halfH * ndcY]);
-      $("#touch").text("Mouse-dist-Button: " + dist.toFixed(2));
+      $('#touch').text('Mouse-dist-Button: ' + dist.toFixed(2));
 
       if (dist < button1.size) {
-        $("#picked").text(" -> picked");
+        $('#picked').text(' -> picked');
         isActive = !isActive;
       } else {
-        $("#picked").text(" -> no hit");
+        $('#picked').text(' -> no hit');
       }
     }
 
