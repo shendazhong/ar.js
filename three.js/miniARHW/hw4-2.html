@@ -4,20 +4,22 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/three.js/build/ar.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <title>hw4-2</title>
   </head>
   <body>
     <script>
-      var camera, cameraHUD, scene, sceneHUD, renderer;
-      var arToolkitSource, arToolkitContext;
-      var marker, target, button;
-      var halfH, halfW;
-      var loader;
+      let camera, cameraHUD, scene, sceneHUD, renderer;
+      let arToolkitSource, arToolkitContext;
+      let marker, target, button;
+      let halfH, halfW;
+      let loader;
 
-      var uvOffsetArray = [];
-      var baseS, baseT;
-      var sprite;
+      let uvOffsetArray = [];
+      let baseS, baseT;
+      let sprite;
 
       function buildSprite(texMat, markerGroup) {
         const size = 2.0;
@@ -64,7 +66,7 @@
         // load a resource
         loader.load(
           // resource URL
-          '6ePTx6p.png',
+          'source/unnamed.png',
 
           // Function when resource is loaded
           function (texture) {
@@ -205,15 +207,14 @@
           const markerRoot = new THREE.Group();
           new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
             type: 'pattern',
-            patternUrl:
-              THREEx.ArToolkitContext.baseURL + '../data/data/patt.hiro',
+            patternUrl: 'source/bomb.patt',
           });
           return markerRoot;
         };
         marker = addMarker();
         scene.add(marker);
 
-        loader.load('target.png', (texture) => {
+        loader.load('source/target.png', (texture) => {
           target = new THREE.Mesh(
             new THREE.CircleGeometry(0.5, 36),
             new THREE.MeshBasicMaterial({ map: texture })
@@ -221,7 +222,7 @@
           target.rotateX(-Math.PI / 2);
           marker.add(target);
         });
-        loader.load('TEa3TVe.png', (texture) => {
+        loader.load('source/redb.png', (texture) => {
           button = new THREE.Mesh(
             new THREE.CircleGeometry(1, 36),
             new THREE.MeshBasicMaterial({ map: texture })
