@@ -7,6 +7,7 @@
     <script src="https://threejs.org/build/three.min.js"></script>
     <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://jyunming-chen.github.io/tutsplus/js/KeyboardState.js"></script>
     <title>hw4-1</title>
     <style type="text/css">
       #info {
@@ -35,10 +36,132 @@
       <button id="shoot">shoot</button>
     </div>
     <script>
-      var camera, scene, renderer;
-      var cannon, clock, ball;
-      var prePos, pos, vel, force;
-      var x0, dx;
+      var camera, scene, renderer, controls, keyboard;
+      var cannon, clock, ball, barrel;
+      var pos, vel, force, dt;
+      var shoot = false;
+      const SPEED = 25;
+
+      class Ball {
+        constructor() {
+          this.main = new THREE.Mesh(
+            new THREE.SphereGeometry(2, 8, 8),
+            new THREE.MeshBasicMaterial({
+              color: 'yellow',
+              wireframe: true,
+            })
+          );
+          scene.add(this.main);
+          cannon.computeInitPosVel();
+          shoot = true;
+        }
+
+        update() {
+          vel.add(force.clone().multiplyScalar(dt));
+          this.prePos = pos.clone();
+          pos.add(vel.clone().multiplyScalar(dt));
+          this.main.position.copy(pos);
+          this.main.quaternion.setFromUnitVectors(
+            new THREE.Vector3(0, 1, 0),
+            pos.clone().sub(this.prePos).normalize()
+          );
+          if (this.main.position.y < 0) {
+            shoot = false;
+            pos = undefined;
+            scene.remove(this.main);
+          }
+        }
+      }
+
+      class Cannon {
+        constructor() {
+          this.main = new THREE.Group();
+          this.barrelPart = new THREE.Group();
+
+          this.body = new THREE.Mesh(
+            new THREE.SphereGeometry(
+              10,
+              20,
+              20,
+              Math.PI + Math.PI * 0.1,
+              Math.PI * 1.8,
+              0,
+              Math.PI / 2
+            ),
+            new THREE.MeshNormalMaterial()
+          );
+
+          this.barrel = new THREE.Mesh(
+            new THREE.CylinderGeometry(2, 2, 20, 18),
+            new THREE.MeshNormalMaterial()
+          );
+          force = new THREE.Vector3(0, -10, 0);
+
+          this.barrelPart.add(this.barrel);
+          this.barrelPart.rotation.z = -Math.PI / 6;
+          this.barrel.position.y = 10;
+          this.main.add(this.body, this.barrelPart);
+          this.main.rotation.y = -Math.PI / 6;
+          scene.add(this.main);
+          barrel = this.barrelPart;
+        }
+
+        update() {
+          if (keyboard.pressed('space')) {
+            if (!shoot) ball = new Ball();
+          }
+          if (keyboard.pressed('left')) {
+            this.main.rotation.y += Math.PI / 90;
+          }
+
+          if (keyboard.pressed('right')) {
+            this.main.rotation.y -= Math.PI / 90;
+          }
+
+          if (keyboard.pressed('up') && this.barrelPart.rotation.z < 0) {
+            this.barrelPart.rotation.z += Math.PI / 90;
+          }
+
+          if (keyboard.pressed('down') && this.barrelPart.rotation.z > -1.5) {
+            this.barrelPart.rotation.z -= Math.PI / 90;
+          }
+          this.drawLine();
+        }
+
+        computeInitPosVel() {
+          vel = barrel
+            .localToWorld(new THREE.Vector3(0, 20, 0))
+            .sub(barrel.localToWorld(new THREE.Vector3(0, 0, 0)))
+            .setLength(SPEED);
+          pos = barrel.localToWorld(new THREE.Vector3(0, 22, 0));
+        }
+
+        drawLine() {
+          let points = [];
+
+          let vel = this.barrelPart
+            .localToWorld(new THREE.Vector3(0, 20, 0))
+            .sub(this.barrelPart.localToWorld(new THREE.Vector3(0, 0, 0)))
+            .setLength(SPEED);
+          let pos = this.barrelPart.localToWorld(new THREE.Vector3(0, 22, 0));
+          for (let i = 0; pos.y > 0; i++) {
+            points.push(pos.clone());
+            vel.add(force.clone().multiplyScalar(0.05));
+            pos.add(vel.clone().multiplyScalar(0.05));
+          }
+          let geometry = new THREE.BufferGeometry().setFromPoints(points);
+          let parabola = new THREE.Line(
+            geometry,
+            new THREE.LineDashedMaterial({
+              color: 'cyan',
+            })
+          );
+          parabola.computeLineDistances(); // required for LineDashedMaterial
+          scene.remove(this.parabola);
+          this.parabola = parabola;
+          scene.add(this.parabola);
+        }
+      }
 
       init();
       animate();
@@ -58,7 +181,7 @@
           1000
         );
         camera.position.set(0, 150, 150);
-        let controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
         var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
         scene.add(gridXZ);
 
@@ -73,169 +196,57 @@
           false
         );
 
-        cannon = makeCannon();
-        scene.add(cannon);
         clock = new THREE.Clock();
-        //scene.add(makeParabola(-1, 0, 30));
+        cannon = new Cannon();
+        keyboard = new KeyboardState();
 
-        //// settings //////////////////////
-        let barrel = cannon.children[1];
-        barrel.rotation.z = -Math.PI / 6; // barrel angle
-        cannon.rotation.y = -Math.PI / 6;
-        prePos = new THREE.Vector3();
+        // window.addEventListener('keydown', function (e) {
+        //   switch (e.key) {
+        //     case 'ArrowRight':
+        //       cannon.main.rotation.y -= Math.PI / 90;
+        //       break;
+        //     case 'ArrowLeft':
+        //       cannon.main.rotation.y += Math.PI / 90;
+        //       break;
+        //     case 'ArrowDown':
+        //       if (cannon.barrel.rotation.z > -1.5)
+        //         cannon.barrel.rotation.z -= Math.PI / 90;
+        //       break;
+        //     case 'ArrowUp':
+        //       if (cannon.barrel.rotation.z < -0.5)
+        //         cannon.barrel.rotation.z += Math.PI / 90;
+        //       break;
+        //     case ' ':
+        //       if (!shoot) ball = new Ball();
+        //       break;
+        //   }
+        // });
 
-        ball = new THREE.Mesh(
-          new THREE.SphereGeometry(2, 8, 8),
-          new THREE.MeshBasicMaterial({
-            color: 'yellow',
-            wireframe: true,
-          })
-        );
-        scene.add(ball);
-
-        window.addEventListener('keydown', function (e) {
-          switch (e.key) {
-            case 'ArrowRight':
-              cannon.rotation.y -= Math.PI / 90;
-              break;
-            case 'ArrowLeft':
-              cannon.rotation.y += Math.PI / 90;
-              break;
-            case 'ArrowDown':
-              if (barrel.rotation.z > -1.5) barrel.rotation.z -= Math.PI / 90;
-              break;
-            case 'ArrowUp':
-              if (barrel.rotation.z < -0.5) barrel.rotation.z += Math.PI / 90;
-              break;
-            case ' ':
-              if (!ball) {
-                ball = new THREE.Mesh(
-                  new THREE.SphereGeometry(2, 8, 8),
-                  new THREE.MeshBasicMaterial({
-                    color: 'yellow',
-                    wireframe: true,
-                  })
-                );
-                scene.add(ball);
-              }
-              break;
-          }
+        $('#up').click(function () {
+          if (barrel.rotation.z < -0.5) barrel.rotation.z += 0.1;
         });
-
-        $('#up').mousedown(function () {
-          if (barrel.rotation.z < -0.5) barrel.rotation.z += Math.PI / 90;
+        $('#down').click(function () {
+          if (barrel.rotation.z > -1.5) barrel.rotation.z -= 0.1;
         });
-        $('#down').mousedown(function () {
-          if (barrel.rotation.z > -1.5) barrel.rotation.z -= Math.PI / 90;
+        $('#left').click(function () {
+          cannon.main.rotation.y += 0.3;
         });
-        $('#left').mousedown(function () {
-          cannon.rotation.y += Math.PI / 90;
+        $('#right').click(function () {
+          cannon.main.rotation.y -= 0.3;
         });
-        $('#right').mousedown(function () {
-          cannon.rotation.y -= Math.PI / 90;
+        $('#shoot').click(function () {
+          if (!shoot) ball = new Ball();
         });
-        $('#shoot').mousedown(function () {
-          if (!ball) {
-            ball = new THREE.Mesh(
-              new THREE.SphereGeometry(2, 8, 8),
-              new THREE.MeshBasicMaterial({
-                color: 'yellow',
-                wireframe: true,
-              })
-            );
-            scene.add(ball);
-          }
-        });
-      }
-
-      function makeCannon() {
-        let cannon = new THREE.Group();
-        let body = new THREE.Mesh(
-          new THREE.SphereGeometry(
-            10,
-            20,
-            20,
-            Math.PI + Math.PI * 0.1,
-            Math.PI * 1.8,
-            0,
-            Math.PI / 2
-          ),
-          new THREE.MeshNormalMaterial()
-        );
-        let barrelPart = new THREE.Group();
-        let barrel = new THREE.Mesh(
-          new THREE.CylinderGeometry(2, 2, 20, 18),
-          new THREE.MeshNormalMaterial()
-        );
-        barrelPart.add(barrel);
-        barrel.position.y = 10;
-
-        cannon.add(body, barrelPart);
-        return cannon;
-      }
-      function computeInitPosVel() {
-        let barrel = cannon.children[1];
-        const SPEED = 25;
-        vel = barrel
-          .localToWorld(new THREE.Vector3(0, 20, 0))
-          .sub(barrel.localToWorld(new THREE.Vector3(0, 0, 0)))
-          .setLength(SPEED);
-        pos = barrel.localToWorld(new THREE.Vector3(0, 22, 0));
-      }
-
-      function makeParabola(a, b, c) {
-        let xRange = (Math.sqrt(-a * c) * 2) / a;
-        const N = 20;
-        let dx = xRange / 20;
-
-        let points = [];
-        let x0 = b - xRange / 2;
-        for (let i = 0; i <= N; i++) {
-          xi = x0 + i * dx;
-          yi = a * (xi - b) * (xi - b) + c;
-          points.push(new THREE.Vector3(xi, yi, 0));
-        }
-
-        let geometry = new THREE.BufferGeometry().setFromPoints(points);
-        let parabola = new THREE.Line(
-          geometry,
-          new THREE.LineDashedMaterial({ color: 'cyan' })
-        );
-        parabola.computeLineDistances(); // required for LineDashedMaterial
-        return parabola;
       }
 
       function animate() {
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
 
-        if (pos === undefined) {
-          computeInitPosVel();
-          return;
-        }
-        if (pos.y < 0) return;
-
-        let dt = clock.getDelta();
-
-        // Euler's method
-        if (ball) {
-          let force = new THREE.Vector3(0, -10, 0);
-          force.add(new THREE.Vector3(0, 0, 2));
-          force.add(vel.clone().multiplyScalar(-0.125));
-          vel.add(force.clone().multiplyScalar(dt));
-          pos.add(vel.clone().multiplyScalar(dt));
-
-          ball.position.copy(pos);
-          ball.quaternion.setFromUnitVectors(
-            new THREE.Vector3(0, 1, 0),
-            pos.clone().sub(prePos).normalize()
-          );
-          if (ball.position.y < 0) {
-            scene.remove(ball);
-            pos = undefined;
-            ball = undefined;
-          }
-        }
+        dt = clock.getDelta();
+        if (shoot) ball.update();
+        cannon.update();
+        keyboard.update();
       }
     </script>
   </body>
