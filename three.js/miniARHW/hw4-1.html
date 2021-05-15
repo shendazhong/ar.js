@@ -45,11 +45,8 @@
       class Ball {
         constructor() {
           this.main = new THREE.Mesh(
-            new THREE.SphereGeometry(2, 8, 8),
-            new THREE.MeshBasicMaterial({
-              color: 'yellow',
-              wireframe: true,
-            })
+            new THREE.CylinderGeometry(0.52, 2, 5, 20),
+            new THREE.MeshNormalMaterial()
           );
           scene.add(this.main);
           cannon.computeInitPosVel();
