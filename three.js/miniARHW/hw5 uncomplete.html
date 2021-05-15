@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>hw5</title>
+  </head>
+  <script src="../examples/vendor/three.js/build/three.min.js"></script>
+  <script src="../examples/vendor/three.js/examples/js/libs/stats.min.js"></script>
+  <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+  <script src="../build/ar.js"></script>
+  <script src="explode.js"></script>
+  <script>
+    THREEx.ArToolkitContext.baseURL = '../';
+  </script>
+
+  <body style="margin: 0px; overflow: hidden; font-family: Monospace">
+    <script>
+      var renderer, scene, camera, stats;
+      var markerHiro, _iOSDevice;
+      var arToolKitSource, arToolKitContext;
+      var cannon, clock, ball, barrel;
+      var pos, vel, force, dt;
+      var shoot = false;
+      const SPEED = 2.5;
+
+      class Ball {
+        constructor() {
+          this.main = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.05, 0.2, 0.5, 0.2),
+            new THREE.MeshNormalMaterial()
+          );
+          markerHiro.add(this.main);
+          cannon.computeInitPosVel();
+          shoot = true;
+        }
+
+        update() {
+          vel.add(force.clone().multiplyScalar(dt));
+          this.prePos = pos.clone();
+          pos.add(vel.clone().multiplyScalar(dt));
+          this.main.position.copy(pos);
+          this.main.quaternion.setFromUnitVectors(
+            new THREE.Vector3(0, 1, 0),
+            pos.clone().sub(this.prePos).normalize()
+          );
+        }
+      }
+
+      class Cannon {
+        constructor() {
+          this.main = new THREE.Group();
+          this.barrelPart = new THREE.Group();
+
+          this.body = new THREE.Mesh(
+            new THREE.SphereGeometry(
+              0.1,
+              0.2,
+              0.2,
+              Math.PI + Math.PI * 0.01,
+              Math.PI * 0.18,
+              0,
+              Math.PI / 20
+            ),
+            new THREE.MeshNormalMaterial()
+          );
+
+          this.barrel = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.2, 0.2, 0.2, 0.18),
+            new THREE.MeshNormalMaterial()
+          );
+          this.aimPos = new THREE.Vector3(0, 0, 0);
+          this.barrelPart.add(this.barrel);
+          this.barrel.position.y = 0.1;
+          this.main.add(this.body, this.barrelPart);
+          scene.add(this.main);
+          barrel = this.barrelPart;
+        }
+
+        update() {
+          //this.drawLine();
+        }
+
+        computeInitPosVel() {
+          vel = markerHiro
+            .worldToLocal(barrel.localToWorld(new THREE.Vector3(0, 2, 0)))
+            .setLength(SPEED);
+          pos = markerHiro.worldToLocal(
+            barrel.localToWorld(new THREE.Vector3(0, 2.2, 0))
+          );
+          force = new THREE.Vector3(0, -1, 0);
+        }
+        /*
+              drawLine() {
+                let points = [];
+
+                let vel = this.barrelPart
+                  .localToWorld(new THREE.Vector3(0, 20, 0))
+                  .sub(this.barrelPart.localToWorld(new THREE.Vector3(0, 0, 0)))
+                  .setLength(SPEED);
+                let pos = this.barrelPart.localToWorld(new THREE.Vector3(0, 22, 0));
+                for (let i = 0; pos.y > 0; i++) {
+                  points.push(pos.clone());
+                  vel.add(force.clone().multiplyScalar(0.05));
+                  pos.add(vel.clone().multiplyScalar(0.05));
+                }
+                let geometry = new THREE.BufferGeometry().setFromPoints(points);
+                let parabola = new THREE.Line(
+                  geometry,
+                  new THREE.LineDashedMaterial({
+                    color: 'cyan',
+                  })
+                );
+                parabola.computeLineDistances();
+                scene.remove(this.parabola);
+                this.parabola = parabola;
+                scene.add(this.parabola);
+              }*/
+      }
+
+      init();
+      animate();
+
+      function init() {
+        let _iOSDevice = !!navigator.platform.match(/iPhone|iPod|iPad/);
+
+        renderer = new THREE.WebGLRenderer({
+          alpha: true,
+        });
+        renderer.setClearColor(new THREE.Color('lightgrey'), 0);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.domElement.style.position = 'absolute';
+        renderer.domElement.style.top = '0px';
+        renderer.domElement.style.left = '0px';
+        document.body.appendChild(renderer.domElement);
+
+        scene = new THREE.Scene();
+        camera = new THREE.Camera();
+        scene.add(camera);
+
+        arToolkitSource = new THREEx.ArToolkitSource({
+          sourceType: 'webcam',
+        });
+
+        arToolkitSource.init(onResize);
+
+        window.addEventListener('resize', onResize);
+
+        arToolkitContext = new THREEx.ArToolkitContext({
+          cameraParametersUrl:
+            THREEx.ArToolkitContext.baseURL + '../data/data/camera_para.dat',
+          detectionMode: 'mono',
+          maxDetectionRate: 30,
+          canvasWidth: 80 * 3,
+          canvasHeight: 60 * 3,
+        });
+
+        arToolkitContext.init(function onCompleted() {
+          camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix());
+        });
+
+        markerHiro = addMarkerHiro();
+        scene.add(markerHiro);
+
+        stats = new Stats();
+        document.body.appendChild(stats.dom);
+        clock = new THREE.Clock();
+
+        window.addEventListener('mousedown', function () {
+          if (!shoot) ball = new Ball();
+        });
+      }
+
+      function addMarkerHiro() {
+        let markerRootHiro = new THREE.Group();
+        var artoolkitMarker = new THREEx.ArMarkerControls(
+          arToolkitContext,
+          markerRootHiro,
+          {
+            type: 'pattern',
+            patternUrl:
+              THREEx.ArToolkitContext.baseURL + '../data/data/patt.hiro',
+          }
+        );
+        /*
+              let loader = new THREE.TextureLoader();
+              loader.setCrossOrigin('');
+              let texture = loader.load('source/hulk.png');
+
+              let material = new THREE.MeshBasicMaterial({
+                map: texture,
+                transparent: true,
+                side: THREE.DoubleSide,
+              });
+              let geometry = new THREE.PlaneGeometry(1, 1);
+              let mesh = new THREE.Mesh(geometry, material);
+              mesh.position.y = geometry.parameters.height / 2;
+              let explodeGroup = new THREE.Object3D();
+              explodeGroup.add(mesh);
+
+              markerRootHiro.add(explodeGroup);
+*/
+
+        cannon = new Cannon();
+        markerRootHiro.add(cannon);
+        return markerRootHiro;
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+
+        if (arToolkitSource.ready === false) return;
+        arToolkitContext.update(arToolkitSource.domElement);
+
+        renderer.render(scene, camera);
+        stats.update();
+        /*
+        let localCamera = markerHiro.worldToLocal(new THREE.Vector3(0, 0, 0));
+        localCamera.y = 0;
+
+        let point = new THREE.Vector3(0, 0, 1);
+        let angle = point.angleTo(localCamera);
+        let axis = new THREE.Vector3();
+        axis.crossVectors(point, localCamera).normalize();
+        let explodeGroup = markerHiro.children[0];
+        explodeGroup.quaternion.setFromAxisAngle(axis, angle);
+*/
+        dt = clock.getDelta();
+        if (shoot) ball.update();
+        cannon.update();
+      }
+      function onResize() {
+        arToolkitSource.onResize();
+        arToolkitSource.copySizeTo(renderer.domElement);
+        if (arToolkitContext.arController !== null) {
+          arToolkitSource.copySizeTo(arToolkitContext.arController.canvas);
+        }
+      }
+    </script>
+  </body>
+</html>
