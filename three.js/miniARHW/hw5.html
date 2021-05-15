@@ -87,7 +87,6 @@
         let body = new THREE.Mesh(geometry, material);
         this.main.add(body);
 
-        // cannon barrel
         let geometry1 = new THREE.CylinderGeometry(
           0.2 * scale,
           0.2 * scale,
@@ -214,9 +213,7 @@
         uvs.push(0, 0.75, 0.125, 0.75, 0.125, 1, 0, 1);
         geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
 
-        var texture = new THREE.TextureLoader().load(
-          'https://i.imgur.com/j5NYK55.png'
-        );
+        var texture = new THREE.TextureLoader().load('source/explode.png');
         var texMat = new THREE.MeshBasicMaterial({
           map: texture,
         });
@@ -411,9 +408,7 @@
       }
 
       let geometry = new THREE.PlaneGeometry(1.5, 1.5);
-      let texture = new THREE.TextureLoader().load(
-        'https://i.imgur.com/czAPVT8.png'
-      );
+      let texture = new THREE.TextureLoader().load('source/target.png');
       let material = new THREE.MeshBasicMaterial({
         map: texture,
       });
